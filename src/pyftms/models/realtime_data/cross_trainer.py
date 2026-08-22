@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import dataclasses as dc
+from typing import ClassVar
 
 from ...client.properties import MovementDirection
 from .common import (
@@ -51,6 +52,8 @@ class StepRateData(BaseModel):
 
 @dc.dataclass(frozen=True)
 class CrossTrainerData(RealtimeSpeedData):
+    _flags_size: ClassVar[int] = 3
+
     distance_total: int | None = dc.field(
         default=None,
         metadata=model_meta(
