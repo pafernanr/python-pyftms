@@ -3,19 +3,22 @@
 
 import dataclasses as dc
 import io
-from typing import Any, cast, override
+from typing import Any, ClassVar, cast, override
 
 from ...serializer import BaseModel, get_serializer, model_meta
 
 
 @dc.dataclass(frozen=True)
 class RealtimeData(BaseModel):
+    _flags_size: ClassVar[int] = 2
+
     mask: dc.InitVar[int]
 
     @override
     @classmethod
     def _deserialize_asdict(cls, src: io.IOBase) -> dict[str, Any]:
-        mask, kwargs = cast(int, get_serializer("u2").deserialize(src)), {}
+        fmt = f"u{cls._flags_size}"
+        mask, kwargs = cast(int, get_serializer(fmt).deserialize(src)), {}
         kwargs["mask"] = mask
         mask ^= 1
 
@@ -35,7 +38,7 @@ class RealtimeData(BaseModel):
     @override
     @classmethod
     def _calc_size(cls) -> int:
-        return super()._calc_size() + 2
+        return super()._calc_size() + cls._flags_size
 
 
 @dc.dataclass(frozen=True)
