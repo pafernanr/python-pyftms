@@ -97,7 +97,7 @@ def _get_model_serializers(
         result: dict[str, Serializer] = {}
 
         for field in dc.fields(cls):
-            if field.metadata:
+            if field.metadata and field.init:
                 result[field.name] = _get_model_field_serializer(field)
 
         setattr(

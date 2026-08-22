@@ -3,9 +3,12 @@
 
 import dataclasses as dc
 import io
+import logging
 from typing import Any, ClassVar, cast, override
 
 from ...serializer import BaseModel, get_serializer, model_meta
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dc.dataclass(frozen=True)
@@ -24,14 +27,19 @@ class RealtimeData(BaseModel):
 
         for field, serializer in cls._iter_fields_serializers():
             if mask & 1:
-                kwargs[field.name] = serializer.deserialize(src)
+                try:
+                    kwargs[field.name] = serializer.deserialize(src)
+                except EOFError:
+                    break
 
             mask >>= 1
 
             if not mask:
                 break
 
-        assert not src.read()
+        remaining = src.read()
+        if remaining:
+            _LOGGER.debug("Extra bytes in data stream ignored: %s", remaining.hex())
 
         return kwargs
 
